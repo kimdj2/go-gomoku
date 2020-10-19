@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  golang:
+    tty: true
+    build: ./back
+    volumes:
+      - ./back/app:/go/src/app
+    ports:
+      - "3002:3002"
+    depends_on:
+      - "mongo"  
+    environment:
+      - "GOPATH=/go"  
+  nginx:
+    build: ./nginx
+    tty: true
+    stdin_open: true
+    privileged: true
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - "golang"
+      - "web"
+  web:
+    tty: true
+    build: ./front
+    volumes:
+      - ./front:/front
+    command: bash -c "cd . && yarn start"
+    ports:
+      - "3001:3001"
+  mongo:
+    image: 'mongo:latest'
+    container_name: 'mongo'
+    ports:
+      - '27100:27017'
+  
+    
